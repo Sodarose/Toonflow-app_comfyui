@@ -13,7 +13,8 @@ export default router.get("/", validateFields({ directory: z.string().min(1).max
   const { path } = await u.workspaceFile.resolveWorkspaceFile(req, req.query.directory as string, req.query.path as string);
   const file = await lstat(path);
   if (!file.isFile()) throw Object.assign(new Error("只能读取文件"), { status: 400 });
-  res.set("Cache-Control", "no-store");
+  // ACT: 工作区文件允许浏览器缓存但每次重新校验，避免大视频/图片在每次打开画布时全量重传。
+  res.set("Cache-Control", "private, max-age=0, must-revalidate");
   if (req.query.snapshot === "true") {
     const maxBytes = req.query.maxBytes === undefined ? undefined : Number(req.query.maxBytes);
     if (maxBytes !== undefined && file.size > maxBytes) throw Object.assign(new Error("文件超过本次文本读取的大小限制"), { status: 413 });
@@ -34,3 +35,4 @@ export default router.get("/", validateFields({ directory: z.string().min(1).max
   }
   await sendFile(res, path, { dotfiles: "allow" }, err => { if (err) next(err); });
 });
+

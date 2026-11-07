@@ -42,7 +42,8 @@ export async function refreshMobileConnection() {
       }
       if (data.mode !== "local" && data.mode !== "remote") throw new Error("设备连接状态无效，请重试");
       mobileConnection.value = data;
-      if (!actualPlatform.isMobile && data.mode === "local") {
+      // ACT: 设备互联只允许本机页面管理，远程/局域网页面不轮询该接口，避免持续 403。
+      if (!actualPlatform.isMobile && data.mode === "local" && ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname)) {
         const status = await fetch("/api/mobileLink/status", { headers: { "x-toonflow-mobile-link": "1" }, cache: "no-store", signal: request.signal });
         if (status.ok) {
           const body = await status.json() as { code?: number; data?: { enabled?: boolean; hubEnabled?: boolean } };
@@ -81,3 +82,4 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("pagehide", () => clearTimeout(connectionTimer));
 window.addEventListener("pageshow", () => { void refreshMobileConnection().catch(() => {}); });
 void refreshMobileConnection().catch(() => {});
+
