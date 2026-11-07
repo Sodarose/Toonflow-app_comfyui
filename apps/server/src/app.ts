@@ -13,7 +13,8 @@ import initializePlugins from "@/utils/plugins/initialize";
 import { languageRequest, setLocaleFallback, translateError, translateMessage } from "@/lib/i18n";
 import { detectLocale, normalizeLocale } from "@toonflow/i18n";
 
-const autoInstallProviders = ["apiMart.ts", "metaso.ts", "compshare.ts"];
+// ACT: 本 fork 只内置 ComfyUI Gateway provider；data/providers 被清空或换机后会自动装回，旧云供应商不再安装。
+const autoInstallProviders = ["gateway.ts"];
 
 export async function createApp({
   webRoot,
